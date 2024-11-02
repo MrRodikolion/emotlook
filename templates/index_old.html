@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momo Video Streaming</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul li {
+            margin-right: 20px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        #featured-section {
+            background-image: linear-gradient(to bottom, #f0f0f0, #ffffff);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .video-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section id="video-grid">
+            <div class="video-container">
+                <div class="video-item">
+                    <h3>Unprocessed video stream</h3>
+                    <img src="{{ url_for('get_frame_old') }}" alt="Video 1">
+                </div>
+                <div class="video-item">
+                    <h3>Processed video stream</h3>
+                    <img src="{{ url_for('get_netframe_old') }}" alt="Video 2">
+                    <h3 id="emotecap"></h3>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    </script>
+</body>
+
+</html>
