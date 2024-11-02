@@ -29,6 +29,7 @@ class CamProcess(Process):
         super().run()
 
         cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
 
         device = "cuda" if cuda.is_available() else "cpu"
 
@@ -54,7 +55,6 @@ class CamProcess(Process):
             _, frame = cap.read()
 
             draw_frame = frame.copy()
-            print(frame.shape)
             try:
                 blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], True, False)
                 faceNet.setInput(blob)

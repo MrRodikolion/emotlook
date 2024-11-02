@@ -26,7 +26,7 @@ class ServerProcess(Process):
         def index_old():
             return render_template('index_old.html')
 
-        @app.route('/getframe')
+        @app.route('/getframe_old')
         def get_frame_old():
             def generate():
                 while True:
@@ -41,7 +41,7 @@ class ServerProcess(Process):
 
             return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-        @app.route('/getnetframe')
+        @app.route('/getnetframe_old')
         def get_netframe_old():
             def generate():
                 while True:
@@ -55,5 +55,25 @@ class ServerProcess(Process):
                            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
             return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        @app.route('/')
+        def index():
+            return render_template('index.html')
+
+        @app.route('/get_frame')
+        def get_frame():
+            frame = np.frombuffer(self.camth.frame.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
+            _, buffer = cv2.imencode('.jpg', frame)
+            img_str = base64.b64encode(buffer).decode()
+
+            return jsonify({'image': img_str})
+
+        @app.route('/get_netframe')
+        def get_netframe():
+            frame = np.frombuffer(self.camth.netframe.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
+            _, buffer = cv2.imencode('.jpg', frame)
+            img_str = base64.b64encode(buffer).decode()
+
+            return jsonify({'image': img_str})
 
         app.run(host='0.0.0.0', port=5000)
