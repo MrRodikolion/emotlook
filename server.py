@@ -19,6 +19,7 @@ class ServerProcess(Process):
 
     def run(self):
         super().run()
+        class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
 
         app = Flask(__name__)
 
@@ -75,5 +76,12 @@ class ServerProcess(Process):
             img_str = base64.b64encode(buffer).decode()
 
             return jsonify({'image': img_str})
+
+        @app.route('/get_emotes')
+        def get_emotes():
+            emotes = [i for i in self.camth.cur_emotes]
+
+
+            return 'poopy'
 
         app.run(host='0.0.0.0', port=5000)

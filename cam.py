@@ -21,7 +21,7 @@ class CamProcess(Process):
         self.frame = Array(ctypes.c_uint8, h * w * c)
         self.netframe = Array(ctypes.c_uint8, h * w * c)
 
-        self.cur_emotes = None
+        self.cur_emotes = Array('i', [-1] * 100)
 
         self.started = False
 
@@ -37,6 +37,8 @@ class CamProcess(Process):
 
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
         # class_name = ["anger", "contempt", "disgust", "fear", "happiness", "neutrality", "sadness", "surprise"]
+
+        emotes_list = []
 
         num_class = len(class_name)
         model.fc = Linear(model.fc.in_features, num_class)
@@ -94,7 +96,12 @@ class CamProcess(Process):
                         emote_id = argmax(probabilities)
 
                         cv2.putText(draw_frame, class_name[emote_id], (x1, y1), cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
-                        self.cur_emotes = class_name[emote_id]
+
+                        emotes_list.append(emote_id)
+                        if len(emotes_list) > 100:
+                            del emotes_list[0]
+                        for n, emote in enumerate(emotes_list):
+                            self.cur_emotes[n] = emote
             except:
                 pass
 
