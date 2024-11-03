@@ -3,148 +3,40 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Momo Video Streaming</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #333;
-            color: white;
-            padding: 1rem;
-        }
-
-        nav ul {
-            list-style-type: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav ul li {
-            margin-right: 20px;
-        }
-
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        #featured-section {
-            background-image: linear-gradient(to bottom, #f0f0f0, #ffffff);
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .video-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .video-item img {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 
 <body>
-    <main>
-        <section id="video-grid">
-            <div class="video-container">
+    <main class="col">
+        <div class="row stuf">
+            <div class="col video-col">
+                <h2>Видео потоки</h2>
                 <div class="video-item">
-                    <h3>Unprocessed video stream</h3>
-                    <img id="normframe" alt="Video 1">
+                    <h3>Необработанный видео поток</h3>
+                    <img class="video-img" id="normframe" alt="Видео 1">
                 </div>
                 <div class="video-item">
-                    <h3>Processed video stream</h3>
-                    <img id="netframe" alt="Video 2">
+                    <h3>Обработанный видео поток</h3>
+                    <img class="video-img" id="netframe" alt="Видео 2">
                     <h3 id="emotecap"></h3>
                 </div>
             </div>
-        </section>
+            <div class="col diag-col video-item">
+                <h2>Диаграмма</h2>
+                <img class="diag-img" id="diag" alt="Диаграмма">
+                <h3 id="emotecap"></h3>
+            </div>
+        </div>
     </main>
 
     <script>
-        function update_stream() {
-            const norm_url = "{{ url_for('get_frame') }}"
-            fetch(norm_url)
-                .then(response => response.json())
-                .then(data => {
-                    const imgstr = data.image;
-
-                    const blob = b64toBlob(imgstr, 'image/jpg');
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    document.getElementById("normframe").src = blobUrl;
-                })
-                .catch(error => console.error(error));
-            
-            const net_url = "{{ url_for('get_netframe') }}"
-            fetch(net_url)
-                .then(response => response.json())
-                .then(data => {
-                    const imgstr = data.image;
-
-                    const blob = b64toBlob(imgstr, 'image/jpg');
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    document.getElementById("netframe").src = blobUrl;
-                })
-                .catch(error => console.error(error));
-        }
-
-        const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
-            const byteCharacters = atob(b64Data);
-            const byteArrays = [];
-
-            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-                const byteNumbers = new Array(slice.length);
-                for (let i = 0; i < slice.length; i++) {
-                    byteNumbers[i] = slice.charCodeAt(i);
-                }
-
-                const byteArray = new Uint8Array(byteNumbers);
-                byteArrays.push(byteArray);
-            }
-
-            const blob = new Blob(byteArrays, { type: contentType });
-            return blob;
-        }
-
-        setInterval(update_stream, 0);
+        const norm_url = "{{ url_for('get_frame') }}"
+        const net_url = "{{ url_for('get_netframe') }}"
+        const diag_url = "{{ url_for('get_emotes') }}"
     </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
 </body>
 
 </html>
