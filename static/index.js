@@ -56,17 +56,57 @@ function update_netframe() {
         .catch(error => console.error(error));
 }
 
+var diag = null;
+const ctx = document.getElementById('diag').getContext('2d');
 function update_diag() {
     // const diag_url = "{{ url_for('get_emotes') }}"
     fetch(diag_url)
         .then(response => response.json())
         .then(data => {
-            const imgstr = data.image;
+            const names = data.names;
+            const values = data.data;
 
-            const blob = b64toBlob(imgstr, 'image/jpg');
-            const blobUrl = URL.createObjectURL(blob);
-
-            document.getElementById("diag").src = blobUrl;
+            if (diag !== null) {
+                diag.data.labels = names;
+                diag.data.datasets[0].data = values;
+                diag.update();
+            }
+            else {
+                diag = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: names,
+                        datasets: [{
+                            label: 'Значения',
+                            data: values,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        animation: false,
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                })
+            }
         })
-        .catch(error => console.error(error));
+        .catch(error => console.error('Ошибка:', error));
+
 }

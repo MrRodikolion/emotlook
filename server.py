@@ -8,13 +8,9 @@ import numpy as np
 import base64
 import io
 
-import matplotlib
-import matplotlib.pyplot as plt
 from collections import Counter, OrderedDict
 
 from cam import CamProcess
-
-matplotlib.use('agg')
 
 
 class ServerProcess(Process):
@@ -25,12 +21,6 @@ class ServerProcess(Process):
     def run(self):
         super().run()
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
-
-        plt.figure(figsize=(10, 6))
-        plt.xlabel('Эмоции')
-        plt.ylabel('Количество повторений')
-        plt.xticks(rotation=0)
-        plt.tight_layout()
 
         app = Flask(__name__)
 
@@ -92,16 +82,12 @@ class ServerProcess(Process):
         def get_emotes():
             emotes = [i for i in self.camth.cur_emotes if i != -1]
             counts = OrderedDict(sorted(Counter(emotes).items()))
+            names = [class_name[k] for k in counts.keys()]
+            data = list(counts.values())
 
-            plt.bar([class_name[k] for k in counts.keys()], counts.values())
-            # plt.show()
-
-            buff = io.BytesIO()
-            plt.savefig(buff, format='jpg', bbox_inches='tight')
-            plt.clf()
-            buff.seek(0)
-            base64_image = base64.b64encode(buff.getvalue()).decode()
-
-            return jsonify({'image': base64_image})
+            return jsonify({
+                'names': names,
+                'data': data
+            })
 
         app.run(host='0.0.0.0', port=5000)

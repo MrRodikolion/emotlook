@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Momo Video Streaming</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -25,7 +27,7 @@
             </div>
             <div class="col diag-col video-item">
                 <h2>Диаграмма</h2>
-                <img class="diag-img" id="diag" alt="Диаграмма">
+                <canvas class="diag-img" id="diag" alt="Диаграмма"></canvas>
                 <h3 id="emotecap"></h3>
             </div>
         </div>
