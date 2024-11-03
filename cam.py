@@ -11,6 +11,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 import cv2
 import numpy as np
+from urllib.request import urlopen
 
 from time import time
 
@@ -31,8 +32,9 @@ class CamProcess(Process):
     def run(self):
         super().run()
 
-        cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
+        # cap = cv2.VideoCapture(0)
+        # cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
+        cam_url = r'http://192.168.1.101/capture'
 
         device = "cuda" if cuda.is_available() else "cpu"
 
@@ -59,7 +61,9 @@ class CamProcess(Process):
 
         self.started = True
         while True:
-            _, frame = cap.read()
+            img_resp = urlopen(cam_url)
+            imgnp = np.asarray(bytearray(img_resp.read()), dtype="uint8")
+            frame = cv2.imdecode(imgnp, -1)
 
             draw_frame = frame.copy()
             try:
@@ -108,6 +112,8 @@ class CamProcess(Process):
                             del emotes_list[0]
                         for n, emote in enumerate(emotes_list):
                             self.cur_emotes[n] = emote
+
+                        break
             except:
                 pass
 
