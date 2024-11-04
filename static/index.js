@@ -24,7 +24,7 @@ const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
     return blob;
 }
 
-setInterval(update_stream, 200);
+setInterval(update_stream, 33);
 
 function update_frame() {
     // const norm_url = "{{ url_for('get_frame') }}"

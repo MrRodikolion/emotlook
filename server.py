@@ -26,9 +26,9 @@ class ServerProcess(Process):
         app = Flask(__name__)
         app.debug = False
 
-        # app.logger.disabled = True
-        # log = logging.getLogger('werkzeug')
-        # log.disabled = True
+        app.logger.disabled = True
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
 
         @app.route('/index_old')
         def index_old():
@@ -92,7 +92,7 @@ class ServerProcess(Process):
 
         @app.route('/get_emotes')
         def get_emotes():
-            emotes = [i for i in self.camth.cur_emotes if i != -1]
+            emotes = [i for i in self.camth.cur_emotes.get_obj() if i != -1]
             counts = OrderedDict(sorted(Counter(emotes).items()))
             names = [class_name[k] for k in counts.keys()]
             data = list(counts.values())
