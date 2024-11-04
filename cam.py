@@ -44,13 +44,15 @@ class CamProcess(Process):
             np.copyto(np.frombuffer(net_proc.frame.get_obj(), dtype=np.uint8).reshape(frame.shape), frame)
 
             draw_frame = frame.copy()
-            if net_proc.isDone.value:
+            if True:
                 try:
-                    cv2.rectangle(draw_frame, net_proc.pt1.get_obj(), net_proc.pt2.get_obj(), (0, 0, 255), 2)
-                    cv2.putText(draw_frame, class_name[net_proc.emote_id.value], net_proc.pt1.get_obj(),
-                                cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
-                except:
-                    pass
+                    pt1 = tuple(int(c) for c in net_proc.pt1.get_obj())
+                    pt2 = tuple(int(c) for c in net_proc.pt2.get_obj())
+                    emote_id = int(net_proc.emote_id.value)
+                    cv2.rectangle(draw_frame, pt1, pt2, (0, 0, 255), 2)
+                    cv2.putText(draw_frame, class_name[emote_id], pt1, cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
+                except BaseException as e:
+                    print(e)
 
             for i, emote in enumerate(net_proc.cur_emotes.get_obj()):
                 self.cur_emotes[i] = emote
@@ -86,7 +88,6 @@ class NetProcess(Process):
         model = models.resnet50()
 
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
-        # class_name = ["anger", "contempt", "disgust", "fear", "happiness", "neutrality", "sadness", "surprise"]
 
         emotes_list = []
 
@@ -131,8 +132,6 @@ class NetProcess(Process):
                         shift = s // 5
 
                         face_img = frame[y - s + y1:y + s + y1, x - s + x1:x + s + x1]
-                        # face_img = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
-                        # face_img = cv2.merge([face_img, face_img, face_img])
 
                         # cv2.rectangle(draw_frame, (x - s + x1, y - s + y1), (x + s + x1, y + s + y1), (0, 0, 255), 2)
 
@@ -147,12 +146,6 @@ class NetProcess(Process):
                         emote_id = argmax(output[0])
                         emote_id = int(emote_id)
 
-                        # cv2.putText(draw_frame, class_name[emote_id], (x1, y1), cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
-
-                        # faces.append({
-                        #     "rect": ((x - s + x1, y - s + y1), (x + s + x1, y + s + y1)),
-                        #     "emote_id": emote_id
-                        # })
                         face_deteced = True
                         self.pt1[0], self.pt1[1] = (x - s + x1, y - s + y1)
                         self.pt2[0], self.pt2[1] = (x + s + x1, y + s + y1)
@@ -168,6 +161,4 @@ class NetProcess(Process):
                 pass
 
             self.isDone.value = face_deteced
-            # self.out.put(faces)
-            # np.copyto(np.frombuffer(self.out.get_obj(), dtype=np.uint8).reshape(frame.shape), draw_frame)
 
