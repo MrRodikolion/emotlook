@@ -51,6 +51,8 @@ class CamProcess(Process):
             transforms.ToTensor(),
         ])
         faceNet = cv2.dnn.readNet("./opencv_face_detector_uint8.pb", "./opencv_face_detector.pbtxt")
+        faceNet.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        faceNet.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         self.started = True
         while True:

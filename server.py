@@ -65,6 +65,9 @@ class ServerProcess(Process):
         @app.route('/get_frame')
         def get_frame():
             frame = np.frombuffer(self.camth.frame.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
+            h, w, c = frame.shape
+            frame = cv2.resize(frame, (w // 2, h // 2))
+
             _, buffer = cv2.imencode('.jpg', frame)
             img_str = base64.b64encode(buffer).decode()
 
@@ -73,6 +76,9 @@ class ServerProcess(Process):
         @app.route('/get_netframe')
         def get_netframe():
             frame = np.frombuffer(self.camth.netframe.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
+            h, w, c = frame.shape
+            frame = cv2.resize(frame, (w // 2, h // 2))
+
             _, buffer = cv2.imencode('.jpg', frame)
             img_str = base64.b64encode(buffer).decode()
 
