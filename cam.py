@@ -1,6 +1,7 @@
 from multiprocessing import Process, Value, Array
 import ctypes
 
+import torch
 from torch import load, cuda, no_grad, argmax
 from torch.nn import Linear
 from torch.nn.functional import softmax
@@ -10,6 +11,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 import cv2
 import numpy as np
+
+from time import time
 
 
 class CamProcess(Process):
@@ -92,10 +95,11 @@ class CamProcess(Process):
                         image = image.unsqueeze(0).to(device)
 
                         with no_grad():
-                            output = model(image)
+                            output: torch.Tensor = model(image)
 
-                        probabilities = softmax(output[0], dim=0).cpu()
-                        emote_id = argmax(probabilities)
+                        # probabilities = softmax(output[0], dim=0)
+                        emote_id = argmax(output[0])
+                        emote_id = int(emote_id)
 
                         cv2.putText(draw_frame, class_name[emote_id], (x1, y1), cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
 

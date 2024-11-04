@@ -2,6 +2,7 @@ from multiprocessing import Process, Value, Array
 import ctypes
 
 from flask import Flask, render_template, Response, send_file, redirect, jsonify
+import logging
 import cv2
 from PIL import Image
 import numpy as np
@@ -23,6 +24,11 @@ class ServerProcess(Process):
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
 
         app = Flask(__name__)
+        app.debug = False
+
+        # app.logger.disabled = True
+        # log = logging.getLogger('werkzeug')
+        # log.disabled = True
 
         @app.route('/index_old')
         def index_old():
@@ -68,7 +74,7 @@ class ServerProcess(Process):
             h, w, c = frame.shape
             frame = cv2.resize(frame, (w // 2, h // 2))
 
-            _, buffer = cv2.imencode('.jpg', frame)
+            _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
             img_str = base64.b64encode(buffer).decode()
 
             return jsonify({'image': img_str})
@@ -79,7 +85,7 @@ class ServerProcess(Process):
             h, w, c = frame.shape
             frame = cv2.resize(frame, (w // 2, h // 2))
 
-            _, buffer = cv2.imencode('.jpg', frame)
+            _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
             img_str = base64.b64encode(buffer).decode()
 
             return jsonify({'image': img_str})
