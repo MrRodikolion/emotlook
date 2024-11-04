@@ -13,8 +13,6 @@ import cv2
 import numpy as np
 from urllib.request import urlopen
 
-from time import time
-
 
 class CamProcess(Process):
     def __init__(self):
