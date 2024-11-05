@@ -110,3 +110,14 @@ function update_diag() {
         .catch(error => console.error('Ошибка:', error));
 
 }
+
+document.querySelectorAll('.input-file input[type="file"]').forEach(function(input) {
+    input.addEventListener('change', function(event) {
+        let file = event.target.files[0];
+        let inputFileText = this.closest('.input-file').querySelector('.input-file-text');
+        
+        if (inputFileText) {
+            inputFileText.textContent = file.name;
+        }
+    });
+});

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Momo Video Streaming</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    
+
     <script src="{{ url_for('static', filename='chart.js') }}"></script>
 </head>
 
@@ -32,13 +32,20 @@
             </div>
         </div>
         <div class="row">
-            <div class="col">
-            <form method="post" enctype="multipart/form-data">
-                <input id="file" type="file" name="file1">
-                <input type="submit">
-            </form></div>
-            <div class="col">
-                <img id="imsin">
+            <div class="col s5">
+                <form id="netimg" method="post" enctype="multipart/form-data" onsubmit="send(event,this)">
+                    <input class="green-large-button" type="submit">
+                    <label class="input-file">
+                        <input id="file" type="file" name="file1">
+                        <span class="input-file-btn">Выберите файл</span>
+                        <span class="input-file-text"></span>
+                    </label>
+                </form>
+            </div>
+            <div class="col s5">
+                <div class="video-item">
+                    <img id="imsin">
+                </div>
             </div>
         </div>
     </main>
@@ -47,6 +54,7 @@
         const norm_url = "{{ url_for('get_frame') }}"
         const net_url = "{{ url_for('get_netframe') }}"
         const diag_url = "{{ url_for('get_emotes') }}"
+        const img2netimg_url = "{{ url_for('img2netimg') }}"
     </script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <script src="{{ url_for('static', filename='form.js') }}"></script>

@@ -1,4 +1,4 @@
-from multiprocessing import Process, Value, Array
+from multiprocessing import Process, Value, Array, Queue
 import ctypes
 
 from flask import Flask, render_template, Response, send_file, redirect, jsonify, request
@@ -10,8 +10,6 @@ import base64
 import io
 import os
 
-from simgle_img_net import get_neuroned
-
 from collections import Counter, OrderedDict
 
 from cam import CamProcess
@@ -22,6 +20,9 @@ class ServerProcess(Process):
         super().__init__()
         self.camth = camth
 
+        self.net_in_que = Queue()
+        self.net_out_que = Queue()
+
     def run(self):
         super().run()
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
@@ -31,62 +32,45 @@ class ServerProcess(Process):
         app.config['SECRET_KEY'] = SECRET_KEY
         app.debug = False
 
-        # app.logger.disabled = True
-        # log = logging.getLogger('werkzeug')
-        # log.disabled = True
-
-        @app.route('/index_old', methods=['GET', 'POST'])
-        def index_old():
-            return render_template('index_old.html')
-
-        @app.route('/getframe_old')
-        def get_frame_old():
-            def generate():
-                while True:
-                    frame = np.frombuffer(self.camth.frame.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
-                    if frame is None:
-                        continue
-                    ret, buffer = cv2.imencode('.jpg', frame)
-                    frame = buffer.tobytes()
-
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-            return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-        @app.route('/getnetframe_old')
-        def get_netframe_old():
-            def generate():
-                while True:
-                    frame = np.frombuffer(self.camth.netframe.get_obj(), dtype=np.uint8).reshape(self.camth.shape)
-                    if frame is None:
-                        continue
-                    ret, buffer = cv2.imencode('.jpg', frame)
-                    frame = buffer.tobytes()
-
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-            return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        app.logger.disabled = True
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
 
         @app.route('/', methods=['GET', 'POST'])
         def index():
+
+            return render_template('index.html')
+
+        @app.route('/img2netimg', methods=['POST'])
+        def img2netimg():
             if request.method == 'POST':
                 if 'file1' not in request.files:
                     return 'there is no file1 in form!'
                 file1 = request.files['file1']
                 img = cv2.imdecode(np.frombuffer(file1.read(), np.uint8), -1)
 
-                net_frame = get_neuroned(img)
-                h, w, c = net_frame.shape
-                net_frame = cv2.resize(net_frame, (w // 2, h // 2))
+                self.net_out_que.put(img)
+
+                # while self.net_in_que.empty():
+                #     pass
+                draw_frame = img.copy()
+                for face in self.net_in_que.get():
+                    try:
+                        pt1 = face[0]
+                        pt2 = face[1]
+                        emote_id = face[2]
+                        cv2.rectangle(draw_frame, pt1, pt2, (0, 0, 255), 2)
+                        cv2.putText(draw_frame, class_name[emote_id], pt1, cv2.FONT_ITALIC, 2, (0, 0, 255), 5)
+                    except BaseException as e:
+                        print(e)
+
+                h, w, c = draw_frame.shape
+                net_frame = cv2.resize(draw_frame, (w // 2, h // 2))
 
                 _, buffer = cv2.imencode('.jpg', net_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                 img_str = base64.b64encode(buffer).decode()
 
                 return jsonify({'image': img_str})
-
-            return render_template('index.html')
 
         @app.route('/get_frame')
         def get_frame():

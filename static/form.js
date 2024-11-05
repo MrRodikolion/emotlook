@@ -1,15 +1,16 @@
 
-document.getElementById('myForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+function send(e, form) {
   
-  var file = document.getElementById('file').value;
+  // var file = document.getElementById('file').value;
 
-  var formData = new FormData();
-  formData.append('file1', file);
+  // var formData = new FormData();
+  // formData.append('file1', file);
 
-  fetch('/', {
+  // const data = new URLSearchParams(formData);
+
+  fetch(img2netimg_url, {
     method: 'POST',
-    body: formData
+    body: new FormData(form),
   })
   .then(response => response.json())
   .then(data => {
@@ -21,4 +22,6 @@ document.getElementById('myForm').addEventListener('submit', function(e) {
     document.getElementById("imsin").src = blobUrl;
   })
   .catch(error => console.error('Ошибка:', error));
-});
+  
+  e.preventDefault();
+}
