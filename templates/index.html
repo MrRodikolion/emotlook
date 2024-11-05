@@ -31,6 +31,16 @@
                 <h3 id="emotecap"></h3>
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+            <form method="post" enctype="multipart/form-data">
+                <input id="file" type="file" name="file1">
+                <input type="submit">
+            </form></div>
+            <div class="col">
+                <img id="imsin">
+            </div>
+        </div>
     </main>
 
     <script>
@@ -39,6 +49,7 @@
         const diag_url = "{{ url_for('get_emotes') }}"
     </script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="{{ url_for('static', filename='form.js') }}"></script>
 </body>
 
 </html>

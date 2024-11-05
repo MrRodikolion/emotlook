@@ -26,6 +26,9 @@ class CamProcess(Process):
 
         self.cur_emotes = Array('i', [-1] * 100)
 
+        self.doSingleImg = Value('b', False)
+        self.img = Array(ctypes.c_uint8, h * w * c)
+
         self.started = False
 
     def run(self):
@@ -44,7 +47,7 @@ class CamProcess(Process):
             np.copyto(np.frombuffer(net_proc.frame.get_obj(), dtype=np.uint8).reshape(frame.shape), frame)
 
             draw_frame = frame.copy()
-            if True:
+            if net_proc.isDone.value:
                 try:
                     pt1 = tuple(int(c) for c in net_proc.pt1.get_obj())
                     pt2 = tuple(int(c) for c in net_proc.pt2.get_obj())
@@ -107,6 +110,46 @@ class NetProcess(Process):
 
         self.started = True
         while True:
+            if self.doSingleImg.value:
+                frame = np.frombuffer(self.img.get_obj(), dtype=np.uint8).reshape(self.shape)
+                draw_img = frame.copy()
+                blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], True, False)
+                faceNet.setInput(blob)
+                detections = faceNet.forward()
+
+                h, w, c = frame.shape
+                for i in range(detections.shape[2]):
+                    confidence = detections[0, 0, i, 2]
+                    if confidence > 0.7:
+                        x1 = int(detections[0, 0, i, 3] * w)
+                        y1 = int(detections[0, 0, i, 4] * h)
+                        x2 = int(detections[0, 0, i, 5] * w)
+                        y2 = int(detections[0, 0, i, 6] * h)
+
+                        fw = x2 - x1
+                        fh = y2 - y1
+
+                        x, y = fw // 2, fh // 2
+
+                        s = max(fw, fh) // 2
+                        shift = s // 5
+
+                        face_img = frame[y - s + y1:y + s + y1, x - s + x1:x + s + x1]
+
+                        cv2.rectangle(draw_img, (x - s + x1, y - s + y1), (x + s + x1, y + s + y1), (0, 0, 255), 2)
+
+                        image = Image.fromarray(face_img)
+                        image = preporcec(image)
+                        image = image.unsqueeze(0).to(device)
+
+                        with no_grad():
+                            output: torch.Tensor = model(image)
+
+                        # probabilities = softmax(output[0], dim=0)
+                        emote_id = argmax(output[0])
+                        emote_id = int(emote_id)
+                np.copyto(np.frombuffer(self.frame.get_obj(), dtype=np.uint8).reshape(frame.shape), frame)
+
             frame = np.frombuffer(self.frame.get_obj(), dtype=np.uint8).reshape(self.shape)
             face_deteced = False
             try:
@@ -161,4 +204,3 @@ class NetProcess(Process):
                 pass
 
             self.isDone.value = face_deteced
-

@@ -1,13 +1,16 @@
 from multiprocessing import Process, Value, Array
 import ctypes
 
-from flask import Flask, render_template, Response, send_file, redirect, jsonify
+from flask import Flask, render_template, Response, send_file, redirect, jsonify, request
 import logging
 import cv2
 from PIL import Image
 import numpy as np
 import base64
 import io
+import os
+
+from simgle_img_net import get_neuroned
 
 from collections import Counter, OrderedDict
 
@@ -24,13 +27,15 @@ class ServerProcess(Process):
         class_name = ['angry', 'confused', 'contempt', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'shy', 'surprise']
 
         app = Flask(__name__)
+        SECRET_KEY = os.urandom(32)
+        app.config['SECRET_KEY'] = SECRET_KEY
         app.debug = False
 
-        app.logger.disabled = True
-        log = logging.getLogger('werkzeug')
-        log.disabled = True
+        # app.logger.disabled = True
+        # log = logging.getLogger('werkzeug')
+        # log.disabled = True
 
-        @app.route('/index_old')
+        @app.route('/index_old', methods=['GET', 'POST'])
         def index_old():
             return render_template('index_old.html')
 
@@ -64,8 +69,23 @@ class ServerProcess(Process):
 
             return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-        @app.route('/')
+        @app.route('/', methods=['GET', 'POST'])
         def index():
+            if request.method == 'POST':
+                if 'file1' not in request.files:
+                    return 'there is no file1 in form!'
+                file1 = request.files['file1']
+                img = cv2.imdecode(np.frombuffer(file1.read(), np.uint8), -1)
+
+                net_frame = get_neuroned(img)
+                h, w, c = net_frame.shape
+                net_frame = cv2.resize(net_frame, (w // 2, h // 2))
+
+                _, buffer = cv2.imencode('.jpg', net_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+                img_str = base64.b64encode(buffer).decode()
+
+                return jsonify({'image': img_str})
+
             return render_template('index.html')
 
         @app.route('/get_frame')
